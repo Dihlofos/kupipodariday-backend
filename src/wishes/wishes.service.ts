@@ -158,15 +158,16 @@ export class WishesService {
     });
 
     if (!user) throw new BadRequestException('Пользователь не найден');
+    const { id: _id, copied: _copied, ...wishWithoutId } = wish;
+    const newWish = this.wishRepository.create(wishWithoutId);
 
-    const newWish = this.wishRepository.create(wish);
     newWish.copied = 0;
     newWish.raised = 0;
     newWish.owner = user;
     wish.copied += 1;
 
     await this.wishRepository.save(wish);
-    await this.wishRepository.save(newWish);
+    await this.wishRepository.insert(newWish);
 
     return newWish;
   }
