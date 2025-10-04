@@ -159,18 +159,15 @@ export class WishesService {
 
     if (!user) throw new BadRequestException('Пользователь не найден');
 
-    const isWishHas = user.wishes.some((item) => item.id === wish.id);
+    const newWish = this.wishRepository.create(wish);
+    newWish.copied = 0;
+    newWish.raised = 0;
+    newWish.owner = user;
+    wish.copied += 1;
 
-    if (!isWishHas) {
-      const newWish = this.wishRepository.create(wish);
-      newWish.copied = 0;
-      newWish.raised = 0;
-      newWish.owner = user;
-      wish.copied += 1;
-      await this.wishRepository.save(wish);
-      await this.wishRepository.insert(newWish);
-    }
+    await this.wishRepository.save(wish);
+    await this.wishRepository.save(newWish);
 
-    return user;
+    return newWish;
   }
 }
