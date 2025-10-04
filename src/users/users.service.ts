@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Like, QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -26,7 +26,7 @@ export class UsersService {
         password: hash,
       });
 
-      return newUser;
+      return { ...newUser, password: undefined };
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError as {
@@ -69,7 +69,6 @@ export class UsersService {
     for (const key in updateUserDto) {
       if (key === 'password') {
         const hash = await bcrypt.hash(userToUpdate.password, 10);
-        console.log('hash', hash);
         userToUpdate.password = hash;
       } else if (updateUserDto[key]) {
         userToUpdate[key] = updateUserDto[key];
@@ -79,7 +78,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.save(userToUpdate);
 
-      return user;
+      return { ...user, password: undefined };
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError as {
@@ -144,7 +143,7 @@ export class UsersService {
 
   async findManyUsers(query: string) {
     return await this.userRepository.find({
-      where: [{ username: query }, { email: query }],
+      where: [{ username: Like(`%${query}%`) }, { email: Like(`%${query}%`) }],
     });
   }
 

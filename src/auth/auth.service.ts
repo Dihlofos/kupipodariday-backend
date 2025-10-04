@@ -29,7 +29,7 @@ export class AuthService {
           return null;
         }
 
-        return user;
+        return { ...user, password: undefined };
       });
     }
     return null;
